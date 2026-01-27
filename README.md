@@ -1,10 +1,10 @@
-# Authentication Tester App
+# ARC Checkin Development Challenge
 
-This is a small scale attempt to integrate authentication within a basic react application. This is a single-page application (SPA) that allows users to login via Auth0 and make authenticated API requests to protected endpoints.
+This repo serves as a simple solution to requiring volunteers to check-in to a charity when they arrive on site where the front desk is often unmanned. There's a paper form that is forgotten. Fundamentally having a web app doesn't solve the problem they're facing, which is volunteers check-in, but it does offer a simple challenge for me to solve and learn some things along the way. 
+
+This is a single-page application (SPA) that allows users to login via Auth0 and make authenticated API requests to protected endpoints to check-in as themselves and view their check-in status and their previous check-ins. I'll also try and add some level of admin role that can view all users' check-ins and check-in status.
 
 The application is deployed to AWS Lambda and API Gateway using OpenTofu (Infrastructure as Code). It's designed to be cheap to run and easy to maintain.
-
-This serves as a template for future projects requiring web apps with authentication and protected APIs.
 
 ## Architecture Overview
 
