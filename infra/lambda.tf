@@ -16,7 +16,7 @@ resource "aws_iam_role" "lambda_role" {
   })
   # Explicit attributes to match provider planned/defaults and avoid
   # legacy-plugin SDK warnings about non-computed attributes appearing
-  description          = "Role for the Lambda function of the auth-starter-app"
+  description          = "Role for the Lambda function of the arc-check-in-app"
   max_session_duration = 3600
   force_detach_policies = false
   path                 = "/"
@@ -169,12 +169,6 @@ output "api_endpoint" {
   description = "API Gateway endpoint URL"
 }
 
-####################################################################
-#### NEXT STEPS:  ##################################################
-######## 1. Create a CI/CD pipeline to build the react package to auth-app/build #
-######## 2. Set auth0_domain and auth0_client_id variables as secrets in AWS and collected by the pipeline #
-####################################################################
-
 ### API Gateway CloudWatch role (conditional)
 # Create the role only when `var.create_apigw_cloudwatch_role` is true.
 resource "aws_iam_role" "apigateway_cloudwatch_role" {
@@ -220,7 +214,7 @@ data "aws_iam_policy_document" "apiGateway_iam_policy_document" {
 
 resource "aws_iam_policy" "apiGateway_iam_policy" {
   name        = "apiGateway-iam-policy"
-  description = "A policy to allow API Gateway to access AWS resources for the auth-app project."
+  description = "A policy to allow API Gateway to access AWS resources for the arc-check-in project."
   policy      = data.aws_iam_policy_document.apiGateway_iam_policy_document.json
 }
 

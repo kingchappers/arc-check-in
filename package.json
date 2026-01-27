@@ -1,5 +1,5 @@
 {
-  "name": "auth-app",
+  "name": "arc-check-in",
   "private": true,
   "type": "module",
   "scripts": {

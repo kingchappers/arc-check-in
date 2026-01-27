@@ -8,7 +8,7 @@ terraform {
 
   backend "s3" {
     bucket       = var.state_bucket
-    key          = "auth-app/terraform.tfstate"
+    key          = "${var.app_name}/terraform.tfstate"
     region       = var.aws_region
     use_lockfile = true
   }
