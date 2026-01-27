@@ -16,7 +16,7 @@ resource "aws_iam_role" "lambda_role" {
   })
   # Explicit attributes to match provider planned/defaults and avoid
   # legacy-plugin SDK warnings about non-computed attributes appearing
-  description          = "Role for the Lambda function of the arc-check-in-app"
+  description          = "Role for the Lambda function of the arc-check-in"
   max_session_duration = 3600
   force_detach_policies = false
   path                 = "/"

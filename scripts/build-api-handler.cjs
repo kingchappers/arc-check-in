@@ -25,7 +25,7 @@ if (fs.existsSync(apiHandlerPath)) {
 // Create a minimal package.json for npm install to get all dependencies
 const packageJsonPath = path.join(apiBuildDir, 'package.json');
 const packageJson = {
-  name: 'arc-check-in-app-api',
+  name: 'arc-check-in-api',
   version: '1.0.0',
   dependencies: {
     'jsonwebtoken': '^9.0.3',
