@@ -45,7 +45,7 @@ This document explains how the authentication app is deployed to AWS, what resou
 ### 1. Two AWS Lambda Functions
 
 #### Static File Server Lambda
-- **Name:** `auth-starter-app` (from `var.app_name`)
+- **Name:** `arc-check-in` (from `var.app_name`)
 - **Handler:** `index.handler` (points to `build/client/index.js`)
 - **Runtime:** Node.js 24.x
 - **Memory:** 512 MB
@@ -57,7 +57,7 @@ This document explains how the authentication app is deployed to AWS, what resou
 - **Code Source:** `build/client/` directory zipped
 
 #### API Lambda
-- **Name:** `auth-starter-app-api` (from `${var.app_name}-api`)
+- **Name:** `arc-check-in-api` (from `${var.app_name}-api`)
 - **Handler:** `index.handler` (points to `build/api/index.js`)
 - **Runtime:** Node.js 24.x
 - **Memory:** 512 MB
@@ -71,7 +71,7 @@ This document explains how the authentication app is deployed to AWS, what resou
 ### 2. API Gateway (HTTP v2)
 
 - **Protocol:** HTTP (not REST)
-- **Name:** `auth-starter-app-api`
+- **Name:** `arc-check-in-api`
 - **CORS Configuration:**
   - Allowed Origins: `*` (all origins)
   - Allowed Methods: GET, HEAD, OPTIONS, POST, PUT, PATCH, DELETE
@@ -91,7 +91,7 @@ The API Gateway has two routes:
 
 ### 4. IAM Permissions
 
-#### Lambda Execution Role (`auth-starter-app-lambda-role`)
+#### Lambda Execution Role (`arc-check-in-lambda-role`)
 
 The role allows Lambda functions to:
 - Write logs to CloudWatch (via `AWSLambdaBasicExecutionRole` policy)
@@ -105,7 +105,7 @@ Permissions granted:
     "Service": "apigateway.amazonaws.com"
   },
   "Action": "lambda:InvokeFunction",
-  "Resource": "arn:aws:lambda:...:function:auth-starter-app*"
+  "Resource": "arn:aws:lambda:...:function:arc-check-in*"
 }
 ```
 
@@ -118,7 +118,7 @@ Allows API Gateway to write request logs to CloudWatch:
 
 ### 5. CloudWatch Logs
 
-- **Log Group:** `/aws/apigateway/auth-starter-app`
+- **Log Group:** `/aws/apigateway/arc-check-in`
 - **Retention:** 7 days
 - **Logs:** All API requests and responses
 
@@ -209,7 +209,7 @@ AUTH0_AUDIENCE            # e.g., "https://dev-xxxxxxxxxxxxxxxx.uk.auth0.com/api
 ```hcl
 aws_region     = "eu-west-2"
 state_bucket   = "kingchappers-terraform-state-bucket"
-app_name       = "auth-starter-app"
+app_name       = "arc-check-in"
 environment    = "production"
 auth0_audience = "https://dev-xf4mizgda1uv0xvb.uk.auth0.com/api/v2/"
 ```
@@ -372,7 +372,6 @@ To deploy without CI/CD:
 ### 1. Build the Application
 
 ```bash
-cd /Users/samuelchapman/Projects/auth-app
 yarn install
 yarn build
 ```
@@ -405,16 +404,16 @@ tofu output api_endpoint
 
 View API Gateway logs:
 ```bash
-aws logs tail /aws/apigateway/auth-starter-app --follow
+aws logs tail /aws/apigateway/arc-check-in --follow
 ```
 
 View Lambda logs:
 ```bash
 # Static file server
-aws logs tail /aws/lambda/auth-starter-app --follow
+aws logs tail /aws/lambda/arc-check-in --follow
 
 # API Lambda
-aws logs tail /aws/lambda/auth-starter-app-api --follow
+aws logs tail /aws/lambda/arc-check-in-api --follow
 ```
 
 ### Common Log Messages
@@ -558,7 +557,7 @@ cd infra
 tofu apply
 
 # Check logs to find issue
-aws logs tail /aws/lambda/auth-starter-app-api --follow
+aws logs tail /aws/lambda/arc-check-in-api --follow
 ```
 
 ---

@@ -113,7 +113,7 @@ fs.renameSync(apiHandlerPath, indexPath);
 #### 4. Create temporary package.json
 ```javascript
 {
-  "name": "auth-app-api",
+  "name": "arc-check-in-api",
   "version": "1.0.0",
   "dependencies": {
     "jsonwebtoken": "^9.0.3",
