@@ -170,6 +170,8 @@ data "aws_iam_policy_document" "github_iam_policy_document" {
   # ---------------------------------------------------------------------------
   # Creates/manages the custom API Gateway policy. Scoped to policies
   # matching the app name pattern.
+  # NOTE: apiGateway-iam-policy is the legacy name - included for migration.
+  # Can be removed after the policy has been renamed in production.
   statement {
     sid = "IAMPolicyManagement"
     actions = [
@@ -182,7 +184,8 @@ data "aws_iam_policy_document" "github_iam_policy_document" {
     ]
     effect = "Allow"
     resources = [
-      "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/${var.app_name}-*"
+      "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/${var.app_name}-*",
+      "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/apiGateway-iam-policy"
     ]
   }
 
