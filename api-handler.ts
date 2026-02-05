@@ -25,11 +25,11 @@ function getKey(header: any, callback: any) {
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   try {
-    console.log('Received event:', JSON.stringify(event, null, 2));
+    // Log request metadata only (not headers or body which may contain sensitive data)
+    console.log('Request received:', { path: event.rawPath, method: event.requestContext?.http?.method });
 
     // Extract token from Authorization header
     const authHeader = event.headers?.authorization || '';
-    console.log('Auth header:', authHeader);
     
     const token = authHeader.replace('Bearer ', '');
 
@@ -43,7 +43,10 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
     // Verify and decode JWT using Promise wrapper
     const decoded: any = await new Promise((resolve, reject) => {
-      verify(token, getKey, { audience: AUTH0_AUDIENCE }, (err, decoded) => {
+      verify(token, getKey, {
+        audience: AUTH0_AUDIENCE,
+        issuer: `https://${AUTH0_DOMAIN}/`
+      }, (err, decoded) => {
         if (err) {
           reject(err);
         } else {
@@ -70,13 +73,11 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       body: JSON.stringify({ error: 'Endpoint not found' }),
     };
   } catch (error) {
-    console.error('Unhandled error:', error);
+    // Log error details server-side for debugging, but don't expose to client
+    console.error('Authentication failed:', error instanceof Error ? error.name : 'Unknown error');
     return {
       statusCode: 401,
-      body: JSON.stringify({ 
-        error: 'Unauthorized',
-        details: error instanceof Error ? error.message : String(error)
-      }),
+      body: JSON.stringify({ error: 'Unauthorized' }),
     };
   }
 };
