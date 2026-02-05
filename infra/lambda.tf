@@ -1,7 +1,7 @@
 # Lambda execution role
 resource "aws_iam_role" "lambda_role" {
   name = "${var.app_name}-lambda-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -16,12 +16,12 @@ resource "aws_iam_role" "lambda_role" {
   })
   # Explicit attributes to match provider planned/defaults and avoid
   # legacy-plugin SDK warnings about non-computed attributes appearing
-  description          = "Role for the Lambda function of the arc-check-in"
-  max_session_duration = 3600
+  description           = "Role for the Lambda function of the arc-check-in"
+  max_session_duration  = 3600
   force_detach_policies = false
-  path                 = "/"
-  permissions_boundary = ""
-  tags                 = {}
+  path                  = "/"
+  permissions_boundary  = ""
+  tags                  = {}
 }
 
 # Attach basic Lambda execution policy
@@ -65,7 +65,7 @@ resource "aws_lambda_function" "app" {
 # API Gateway REST API
 resource "aws_apigatewayv2_api" "app" {
   name          = "${var.app_name}-api"
-  description = "API for the authentication starter application"
+  description   = "API for the authentication starter application"
   protocol_type = "HTTP"
 
   cors_configuration {
@@ -77,7 +77,7 @@ resource "aws_apigatewayv2_api" "app" {
   }
 
   api_key_selection_expression = "$request.header.x-api-key"
-  version = 0.1
+  version                      = 0.1
 
   tags = {
     Environment = var.environment
@@ -109,7 +109,7 @@ resource "aws_apigatewayv2_stage" "default" {
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_logs.arn
-    format          = jsonencode({
+    format = jsonencode({
       requestId      = "$context.requestId"
       sourceIp       = "$context.identity.sourceIp"
       requestTime    = "$context.requestTime"
@@ -148,7 +148,7 @@ resource "aws_cloudwatch_log_resource_policy" "apigateway_write" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
+        Effect    = "Allow",
         Principal = { Service = "apigateway.amazonaws.com" },
         Action = [
           "logs:CreateLogStream",
@@ -215,7 +215,7 @@ data "aws_iam_policy_document" "apiGateway_iam_policy_document" {
       "apigateway:GET",
       "apigateway:UpdateAccount"
     ]
-    effect    = "Allow"
+    effect = "Allow"
     resources = [
       "arn:aws:apigateway:${var.aws_region}::/account"
     ]
@@ -225,7 +225,7 @@ data "aws_iam_policy_document" "apiGateway_iam_policy_document" {
       "iam:GetRole",
       "iam:PassRole"
     ]
-    effect    = "Allow"
+    effect = "Allow"
     resources = [
       aws_iam_role.apigateway_cloudwatch_role.arn
     ]
@@ -233,8 +233,8 @@ data "aws_iam_policy_document" "apiGateway_iam_policy_document" {
 }
 
 resource "aws_iam_policy" "apiGateway_iam_policy" {
-  name        = "apiGateway-iam-policy"
-  description = "A policy to allow API Gateway to access AWS resources for the arc-check-in project."
+  name        = "${var.app_name}-apiGateway-iam-policy"
+  description = "A policy to allow API Gateway to access AWS resources for the ${var.app_name} project."
   policy      = data.aws_iam_policy_document.apiGateway_iam_policy_document.json
 }
 
