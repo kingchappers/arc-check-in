@@ -179,6 +179,7 @@ data "aws_iam_policy_document" "github_iam_policy_document" {
       "iam:GetPolicy",
       "iam:DeletePolicy",
       "iam:GetPolicyVersion",
+      "iam:DeletePolicyVersion",
       "iam:ListPolicyVersions",
       "iam:CreatePolicyVersion",
     ]
