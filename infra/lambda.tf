@@ -30,6 +30,28 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
   role       = aws_iam_role.lambda_role.name
 }
 
+# DynamoDB access policy for Lambda
+resource "aws_iam_role_policy" "lambda_dynamodb" {
+  name = "${var.app_name}-lambda-dynamodb-policy"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:Query"
+        ]
+        Resource = aws_dynamodb_table.checkin_sessions.arn
+      }
+    ]
+  })
+}
+
 # Archive the build output
 data "archive_file" "lambda_zip" {
   type        = "zip"
