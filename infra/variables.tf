@@ -38,3 +38,9 @@ variable "auth0_audience" {
   type        = string
   description = "Auth0 API audience identifier"
 }
+
+variable "cors_allowed_origins" {
+  type        = list(string)
+  description = "List of allowed origins for CORS (e.g., ['https://example.com'])"
+  default     = []
+}

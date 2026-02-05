@@ -11,6 +11,7 @@ terraform {
     key          = "${var.app_name}/terraform.tfstate"
     region       = var.aws_region
     use_lockfile = true
+    encrypt      = true
   }
 }
 

@@ -69,10 +69,10 @@ resource "aws_apigatewayv2_api" "app" {
   protocol_type = "HTTP"
 
   cors_configuration {
-    allow_origins  = ["*"]
-    allow_methods  = ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
-    allow_headers  = ["*"]
-    expose_headers = ["*"]
+    allow_origins  = var.cors_allowed_origins
+    allow_methods  = ["GET", "POST", "OPTIONS"]
+    allow_headers  = ["Authorization", "Content-Type"]
+    expose_headers = ["Content-Type"]
     max_age        = 300
   }
 
@@ -109,7 +109,17 @@ resource "aws_apigatewayv2_stage" "default" {
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_logs.arn
-    format          = "$context.requestId"
+    format          = jsonencode({
+      requestId      = "$context.requestId"
+      sourceIp       = "$context.identity.sourceIp"
+      requestTime    = "$context.requestTime"
+      httpMethod     = "$context.httpMethod"
+      routeKey       = "$context.routeKey"
+      status         = "$context.status"
+      protocol       = "$context.protocol"
+      responseLength = "$context.responseLength"
+      errorMessage   = "$context.error.message"
+    })
   }
 
   tags = {
@@ -203,12 +213,22 @@ data "aws_iam_policy_document" "apiGateway_iam_policy_document" {
   statement {
     actions = [
       "apigateway:GET",
-      "apigateway:UpdateAccount",
+      "apigateway:UpdateAccount"
+    ]
+    effect    = "Allow"
+    resources = [
+      "arn:aws:apigateway:${var.aws_region}::/account"
+    ]
+  }
+  statement {
+    actions = [
       "iam:GetRole",
       "iam:PassRole"
     ]
     effect    = "Allow"
-    resources = ["*"]
+    resources = [
+      aws_iam_role.apigateway_cloudwatch_role.arn
+    ]
   }
 }
 
