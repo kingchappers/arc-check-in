@@ -78,6 +78,10 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       return handleCheckinStatus(decoded);
     }
 
+    if (path === '/api/checkin') {
+      return handleCheckinToggle(decoded);
+    }
+
     // 404 for unknown endpoints
     return {
       statusCode: 404,
@@ -128,6 +132,71 @@ async function handleCheckinStatus(decoded: any) {
     };
   } catch (error) {
     console.error('Error getting check-in status:', error instanceof Error ? error.message : 'Unknown error');
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Internal server error' }),
+    };
+  }
+}
+
+async function handleCheckinToggle(decoded: any) {
+  try {
+    const userId = decoded.sub;
+    const currentSession = await getCurrentSession(userId);
+
+    if (currentSession) {
+      // Currently checked in - check out
+      const checkOutTime = new Date().toISOString();
+      await docClient.send(new UpdateCommand({
+        TableName: DYNAMODB_TABLE_NAME,
+        Key: {
+          userId: userId,
+          checkInTime: currentSession.checkInTime,
+        },
+        UpdateExpression: 'SET checkOutTime = :checkOutTime',
+        ExpressionAttributeValues: {
+          ':checkOutTime': checkOutTime,
+        },
+      }));
+
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checkedIn: false,
+          session: {
+            checkInTime: currentSession.checkInTime,
+            checkOutTime: checkOutTime,
+          },
+        }),
+      };
+    } else {
+      // Not checked in - check in
+      const checkInTime = new Date().toISOString();
+      await docClient.send(new PutCommand({
+        TableName: DYNAMODB_TABLE_NAME,
+        Item: {
+          userId: userId,
+          checkInTime: checkInTime,
+          checkOutTime: null,
+        },
+      }));
+
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checkedIn: true,
+          session: {
+            checkInTime: checkInTime,
+            checkOutTime: null,
+          },
+        }),
+      };
+    }
+  } catch (error) {
+    console.error('Error toggling check-in:', error instanceof Error ? error.message : 'Unknown error');
     return {
       statusCode: 500,
       headers: { 'Content-Type': 'application/json' },
