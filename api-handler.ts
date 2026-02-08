@@ -1,9 +1,16 @@
 import { verify } from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 import type { APIGatewayProxyHandlerV2 } from 'aws-lambda';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
 const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN || '';
 const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE || '';
+const DYNAMODB_TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || '';
+
+// Create DynamoDB client
+const dynamoClient = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
 // Create JWKS client to fetch Auth0's public keys
 const client = jwksClient({
@@ -67,6 +74,10 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       return handleUserInfo(decoded);
     }
 
+    if (path === '/api/checkin/status') {
+      return handleCheckinStatus(decoded);
+    }
+
     // 404 for unknown endpoints
     return {
       statusCode: 404,
@@ -81,6 +92,49 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     };
   }
 };
+
+async function getCurrentSession(userId: string) {
+  const result = await docClient.send(new QueryCommand({
+    TableName: DYNAMODB_TABLE_NAME,
+    KeyConditionExpression: 'userId = :userId',
+    ExpressionAttributeValues: {
+      ':userId': userId,
+    },
+    ScanIndexForward: false, // Sort descending (most recent first)
+    Limit: 1,
+  }));
+
+  const session = result.Items?.[0];
+  if (session && !session.checkOutTime) {
+    return session; // Currently checked in
+  }
+  return null; // Not checked in
+}
+
+async function handleCheckinStatus(decoded: any) {
+  try {
+    const userId = decoded.sub;
+    const currentSession = await getCurrentSession(userId);
+
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        checkedIn: !!currentSession,
+        currentSession: currentSession ? {
+          checkInTime: currentSession.checkInTime,
+        } : null,
+      }),
+    };
+  } catch (error) {
+    console.error('Error getting check-in status:', error instanceof Error ? error.message : 'Unknown error');
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Internal server error' }),
+    };
+  }
+}
 
 function handleTestEndpoint(decoded: any) {
   return {
