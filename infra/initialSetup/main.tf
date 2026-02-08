@@ -132,6 +132,7 @@ data "aws_iam_policy_document" "github_iam_policy_document" {
       "iam:AttachRolePolicy",
       "iam:DetachRolePolicy",
       "iam:PutRolePolicy",
+      "iam:GetRolePolicy",
       "iam:DeleteRolePolicy",
     ]
     effect = "Allow"
@@ -229,6 +230,31 @@ data "aws_iam_policy_document" "github_iam_policy_document" {
     effect = "Allow"
     resources = [
       "arn:aws:apigateway:${var.aws_region}::/account"
+    ]
+  }
+
+  # ---------------------------------------------------------------------------
+  # DynamoDB: Table Management
+  # ---------------------------------------------------------------------------
+  # Manages the DynamoDB table for volunteer check-in sessions.
+  # Scoped to tables matching the app name pattern.
+  statement {
+    sid = "DynamoDBTableManagement"
+    actions = [
+      "dynamodb:CreateTable",
+      "dynamodb:DeleteTable",
+      "dynamodb:DescribeTable",
+      "dynamodb:DescribeContinuousBackups",
+      "dynamodb:DescribeTimeToLive",
+      "dynamodb:UpdateTable",
+      "dynamodb:UpdateContinuousBackups",
+      "dynamodb:TagResource",
+      "dynamodb:UntagResource",
+      "dynamodb:ListTagsOfResource",
+    ]
+    effect = "Allow"
+    resources = [
+      "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${var.app_name}-*"
     ]
   }
 
