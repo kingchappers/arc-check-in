@@ -22,9 +22,10 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      NODE_ENV         = "production"
-      AUTH0_DOMAIN     = var.auth0_domain
-      AUTH0_AUDIENCE   = var.auth0_audience
+      NODE_ENV            = "production"
+      AUTH0_DOMAIN        = var.auth0_domain
+      AUTH0_AUDIENCE      = var.auth0_audience
+      DYNAMODB_TABLE_NAME = aws_dynamodb_table.checkin_sessions.name
     }
   }
 
