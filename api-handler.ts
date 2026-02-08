@@ -62,8 +62,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       });
     });
 
-    // Route requests based on path
+    // Route requests based on path and method
     const path = event.rawPath;
+    const method = event.requestContext?.http?.method;
     console.log('Path:', path);
 
     if (path === '/api/test') {
@@ -74,11 +75,11 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       return handleUserInfo(decoded);
     }
 
-    if (path === '/api/checkin/status') {
+    if (path === '/api/checkin/status' && method === 'GET') {
       return handleCheckinStatus(decoded);
     }
 
-    if (path === '/api/checkin') {
+    if (path === '/api/checkin' && method === 'POST') {
       return handleCheckinToggle(decoded);
     }
 
@@ -147,6 +148,8 @@ async function handleCheckinToggle(decoded: any) {
 
     if (currentSession) {
       // Currently checked in - check out
+      // ConditionExpression ensures the session hasn't already been checked out
+      // by a concurrent request (prevents double check-out race condition)
       const checkOutTime = new Date().toISOString();
       await docClient.send(new UpdateCommand({
         TableName: DYNAMODB_TABLE_NAME,
@@ -155,8 +158,10 @@ async function handleCheckinToggle(decoded: any) {
           checkInTime: currentSession.checkInTime,
         },
         UpdateExpression: 'SET checkOutTime = :checkOutTime',
+        ConditionExpression: 'attribute_not_exists(checkOutTime) OR checkOutTime = :null',
         ExpressionAttributeValues: {
           ':checkOutTime': checkOutTime,
+          ':null': null,
         },
       }));
 
@@ -173,13 +178,16 @@ async function handleCheckinToggle(decoded: any) {
       };
     } else {
       // Not checked in - check in
+      // condition_check not needed on PutItem since checkInTime (sort key) uses
+      // a new timestamp, making each check-in a unique item. The checkout
+      // ConditionExpression above prevents the real issue (orphaned sessions)
+      // by ensuring only one request can close a session.
       const checkInTime = new Date().toISOString();
       await docClient.send(new PutCommand({
         TableName: DYNAMODB_TABLE_NAME,
         Item: {
           userId: userId,
           checkInTime: checkInTime,
-          checkOutTime: null,
         },
       }));
 
@@ -190,12 +198,20 @@ async function handleCheckinToggle(decoded: any) {
           checkedIn: true,
           session: {
             checkInTime: checkInTime,
-            checkOutTime: null,
           },
         }),
       };
     }
   } catch (error) {
+    // ConditionalCheckFailedException means a concurrent request already
+    // toggled the state — return 409 Conflict so the client can re-fetch status
+    if (error instanceof Error && error.name === 'ConditionalCheckFailedException') {
+      return {
+        statusCode: 409,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Status changed by another request, please retry' }),
+      };
+    }
     console.error('Error toggling check-in:', error instanceof Error ? error.message : 'Unknown error');
     return {
       statusCode: 500,
