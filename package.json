@@ -16,6 +16,7 @@
     "@mantine/dates": "^8.3.7",
     "@mantine/form": "^8.3.7",
     "@mantine/hooks": "^8.3.7",
+    "@mantine/notifications": "^8.3.14",
     "@react-router/fs-routes": "^7.9.5",
     "@react-router/node": "^7.9.2",
     "@react-router/serve": "^7.9.2",
