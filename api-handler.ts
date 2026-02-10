@@ -79,6 +79,10 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       return handleCheckinStatus(decoded);
     }
 
+    if (path === '/api/checkin/history' && method === 'GET') {
+      return handleCheckinHistory(decoded);
+    }
+
     if (path === '/api/checkin' && method === 'POST') {
       return handleCheckinToggle(decoded);
     }
@@ -213,6 +217,39 @@ async function handleCheckinToggle(decoded: any) {
       };
     }
     console.error('Error toggling check-in:', error instanceof Error ? error.message : 'Unknown error');
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Internal server error' }),
+    };
+  }
+}
+
+async function handleCheckinHistory(decoded: any) {
+  try {
+    const userId = decoded.sub;
+    const result = await docClient.send(new QueryCommand({
+      TableName: DYNAMODB_TABLE_NAME,
+      KeyConditionExpression: 'userId = :userId',
+      ExpressionAttributeValues: {
+        ':userId': userId,
+      },
+      ScanIndexForward: false,
+      Limit: 50,
+    }));
+
+    const sessions = (result.Items || []).map(item => ({
+      checkInTime: item.checkInTime,
+      checkOutTime: item.checkOutTime || null,
+    }));
+
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessions }),
+    };
+  } catch (error) {
+    console.error('Error getting check-in history:', error instanceof Error ? error.message : 'Unknown error');
     return {
       statusCode: 500,
       headers: { 'Content-Type': 'application/json' },

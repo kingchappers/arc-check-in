@@ -23,7 +23,7 @@ yarn typecheck    # TypeScript type checking with React Router type generation
 
 - **Frontend:** React 19, React Router 7 (file-based routing, SPA mode), Mantine 8, Tailwind CSS, TypeScript
 - **Authentication:** Auth0 React SDK with JWT validation
-- **Backend:** AWS Lambda (Node.js 24.x), API Gateway v2
+- **Backend:** AWS Lambda (Node.js 24.x), API Gateway v2, DynamoDB
 - **Infrastructure:** OpenTofu (Terraform-compatible), S3 state backend
 
 ## Architecture
@@ -38,10 +38,10 @@ Browser → API Gateway (HTTP v2)
 
 - `app/` - React application source
   - `routes/` - File-based routes (`_index.tsx` → home page)
-  - `components/` - React components (authentication, layout, api)
+  - `components/` - React components (authentication, layout, api, checkin)
   - `hooks/` - Custom hooks including `useProtectedApi` for authenticated API calls
   - `root.tsx` - Root layout with Mantine theme configuration
-- `infra/` - OpenTofu infrastructure (Lambda, API Gateway, IAM)
+- `infra/` - OpenTofu infrastructure (Lambda, API Gateway, DynamoDB, IAM)
 - `scripts/` - Build scripts for handler injection and API bundling
 - `handler.ts` - Static file server Lambda handler (source)
 - `api-handler.ts` - Protected API Lambda handler (source)
@@ -60,13 +60,25 @@ The build is a three-stage pipeline:
 3. `useProtectedApi()` hook attaches JWT in Authorization header
 4. Lambda validates JWT signature using Auth0's JWKS endpoint
 
+### API Endpoints (`api-handler.ts`)
+
+- `GET /api/checkin/status` - Returns current check-in state (`{ checkedIn, currentSession }`)
+- `POST /api/checkin` - Toggles check-in/check-out (race-condition protected via DynamoDB ConditionExpression)
+- `GET /api/checkin/history` - Returns last 50 check-in sessions for the user
+- `GET /api/user-info` - Returns user profile (name, email) from JWT claims
+- `GET /api/test` - Test endpoint
+
+### Data Model (DynamoDB)
+
+Table `arc-check-in-checkin-sessions`: `userId` (PK) + `checkInTime` (SK). Check-out adds a `checkOutTime` attribute.
+
 ## Environment Variables
 
 **Frontend (Vite compile-time):**
 - `VITE_AUTH0_DOMAIN`, `VITE_AUTH0_CLIENT_ID`, `VITE_AUTH0_AUDIENCE`
 
 **Lambda (runtime):**
-- `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `NODE_ENV`
+- `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `NODE_ENV`, `DYNAMODB_TABLE_NAME`
 
 ## CI/CD
 
