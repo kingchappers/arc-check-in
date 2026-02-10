@@ -1,11 +1,12 @@
 import { StrictMode } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { Center, Loader, Text } from '@mantine/core';
+import { Center, Loader, Stack, Text } from '@mantine/core';
 import { DefaultLayout } from '~/components/layout/DefaultLayout';
 import { CheckInCard } from '~/components/checkin/CheckInCard';
+import { CheckInHistory } from '~/components/checkin/CheckInHistory';
 
 function HomeContent() {
-  const { isAuthenticated, isLoading } = useAuth0();
+  const { isAuthenticated, isLoading, user } = useAuth0();
 
   if (isLoading) {
     return (
@@ -19,7 +20,12 @@ function HomeContent() {
     return <Text>Please log in to check in.</Text>;
   }
 
-  return <CheckInCard />;
+  return (
+    <Stack gap="md">
+      <CheckInCard />
+      <CheckInHistory name={user?.name} />
+    </Stack>
+  );
 }
 
 export default function Home() {

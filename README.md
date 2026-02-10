@@ -32,8 +32,11 @@ The application is deployed to AWS Lambda and API Gateway using OpenTofu (Infras
 ### 4. Protected API Lambda
 - **Handler:** `build/api/index.js` (compiled from `api-handler.ts`)
 - **Routes:**
-  - `GET/POST /api/test` → test endpoint (requires JWT)
-  - `GET/POST /api/user-info` → returns authenticated user info (requires JWT)
+  - `GET /api/test` → test endpoint (requires JWT)
+  - `GET /api/user-info` → returns authenticated user info (requires JWT)
+  - `GET /api/checkin/status` → returns current check-in status (requires JWT)
+  - `POST /api/checkin` → toggles check-in/check-out (requires JWT)
+  - `GET /api/checkin/history` → returns past check-in sessions (requires JWT)
 - **Authentication:** All requests must include a valid JWT in the Authorization header
 - **Validation:** 
   - Verifies JWT signature using Auth0's public keys (JWKS)
@@ -65,6 +68,18 @@ The application is deployed to AWS Lambda and API Gateway using OpenTofu (Infras
 5. JWT is stored in browser memory by Auth0 SDK
 6. User sees their authenticated profile
 
+### User checks in/out:
+1. `CheckInCard` component makes authenticated request to `/api/checkin` (POST)
+2. Lambda validates JWT, then toggles check-in state in DynamoDB
+3. If checking in: creates a new session record with `checkInTime`
+4. If checking out: updates the current session with `checkOutTime`
+5. UI updates to reflect the new state with a toast notification
+
+### User views check-in history:
+1. `CheckInHistory` component fetches `/api/checkin/history` (GET)
+2. Lambda queries DynamoDB for the user's last 50 sessions (most recent first)
+3. Table displays date, check-in time, and check-out time for each session
+
 ### User clicks "Test API" button:
 1. `ApiTest` component calls `useProtectedApi().request('/api/test')`
 2. `useProtectedApi` hook:
@@ -95,6 +110,8 @@ The application is deployed to AWS Lambda and API Gateway using OpenTofu (Infras
 | `build/client/index.js` | Compiled static file server (auto-generated) |
 | `build/api/index.js` | Compiled API handler (auto-generated) |
 | `app/hooks/useProtectedApi.ts` | React hook to make authenticated API requests |
+| `app/components/checkin/CheckInCard.tsx` | Check-in/check-out toggle card |
+| `app/components/checkin/CheckInHistory.tsx` | Check-in history table |
 | `app/components/api/ApiTest.tsx` | UI component with test buttons for API endpoints |
 | `app/components/layout/DefaultLayout.tsx` | Auth0Provider wrapper - maintains auth state globally |
 | `infra/lambda.tf` | Terraform: Static File Server Lambda + API Gateway |
@@ -157,6 +174,7 @@ This project uses **OpenTofu** for Infrastructure as Code. The code is stored in
 Key resources:
 - 2x Lambda functions (one for static files, one for API)
 - 1x API Gateway (HTTP API)
+- 1x DynamoDB table (check-in sessions)
 - 1x IAM role for Lambda execution
 - 1x CloudWatch log groups
 
@@ -171,5 +189,6 @@ Frontend is built with:
 
 Backend uses:
 - **AWS Lambda** - Serverless compute
+- **Amazon DynamoDB** - Check-in session storage
 - **jsonwebtoken** - JWT verification
 - **jwks-rsa** - Auth0 public key fetching
