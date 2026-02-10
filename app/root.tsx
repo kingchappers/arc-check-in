@@ -1,4 +1,5 @@
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 
 import {
   isRouteErrorResponse,
@@ -13,6 +14,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps, createTheme, virtualColor } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
 
 const theme = createTheme({
   colors: {
@@ -101,7 +103,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <MantineProvider defaultColorScheme="auto" theme={theme}>{children}</MantineProvider>
+        <MantineProvider defaultColorScheme="auto" theme={theme}>
+          <Notifications />
+          {children}
+        </MantineProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
