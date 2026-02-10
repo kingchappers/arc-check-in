@@ -113,7 +113,7 @@ export function CheckInCard() {
             : 'Not checked in'}
         </Text>
         <Button
-          color={checkedIn ? 'red' : 'green'}
+          color={checkedIn ? 'red' : 'arc-orange.5'}
           loading={loading}
           onClick={handleToggle}
         >

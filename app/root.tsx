@@ -17,64 +17,57 @@ import { ColorSchemeScript, MantineProvider, mantineHtmlProps, createTheme, virt
 import { Notifications } from '@mantine/notifications';
 
 const theme = createTheme({
+  fontFamily: '"Nunito Sans", ui-sans-serif, system-ui, sans-serif',
+  headings: {
+    fontFamily: '"Fredoka One", cursive, sans-serif',
+  },
+  primaryColor: 'arc-orange',
   colors: {
-    'teal-900': [
-      "#134e4a",
-      "#134e4a",
-      "#134e4a",
-      "#134e4a",
-      "#134e4a",
-      "#134e4a",
-      "#134e4a",
-      "#134e4a",
-      "#134e4a",
-      "#134e4a"
+    'arc-orange': [
+      "#fff4e6",
+      "#ffe8cc",
+      "#ffd8a8",
+      "#ffc078",
+      "#ffa94d",
+      "#ff8411",
+      "#e8780f",
+      "#cc6a0d",
+      "#a3550a",
+      "#7a3f08"
     ],
-    'teal-200': [
-      "#99f6e4",
-      "#99f6e4",
-      "#99f6e4",
-      "#99f6e4",
-      "#99f6e4",
-      "#99f6e4",
-      "#99f6e4",
-      "#99f6e4",
-      "#99f6e4",
-      "#99f6e4"
+    'arc-charcoal': [
+      "#f5f5f5",
+      "#e0e0e0",
+      "#bdbdbd",
+      "#9e9e9e",
+      "#798490",
+      "#4a4a4a",
+      "#333333",
+      "#262626",
+      "#1e1e1e",
+      "#181818"
     ],
-    'slate-950': [
-      "#020617",
-      "#020617",
-      "#020617",
-      "#020617",
-      "#020617",
-      "#020617",
-      "#020617",
-      "#020617",
-      "#020617",
-      "#020617"
-    ],
-    'slate-100': [
-      "#f1f5f9",
-      "#f1f5f9",
-      "#f1f5f9",
-      "#f1f5f9",
-      "#f1f5f9",
-      "#f1f5f9",
-      "#f1f5f9",
-      "#f1f5f9",
-      "#f1f5f9",
-      "#f1f5f9"
+    'arc-warm-white': [
+      "#fffdf9",
+      "#fffdf9",
+      "#fffdf9",
+      "#fffdf9",
+      "#fffdf9",
+      "#fffdf9",
+      "#fffdf9",
+      "#fffdf9",
+      "#fffdf9",
+      "#fffdf9"
     ],
     menu: virtualColor({
       name: 'menu',
-      dark: 'teal-900',
-      light: 'teal-200',
+      dark: 'arc-charcoal',
+      light: 'arc-orange',
     }),
     text: virtualColor({
       name: 'text',
-      dark: 'slate-100',
-      light: 'slate-950',
+      dark: 'arc-warm-white',
+      light: 'arc-charcoal',
     }),
   },
 });
@@ -88,7 +81,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap",
   },
 ];
 
