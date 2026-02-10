@@ -28,7 +28,7 @@ export function DefaultLayout({ children }: { children: React.ReactNode }) {
           collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
         }}
       >
-        <AppShell.Header bg="menu">
+        <AppShell.Header bg="arc-orange.5">
           <Flex mih={50}
             gap="md"
             justify="space-between"
@@ -37,9 +37,9 @@ export function DefaultLayout({ children }: { children: React.ReactNode }) {
             wrap="wrap"
             p="md">
             <div className="flex gap-2 items-center">
-              <Burger opened={mobileOpened} onClick={toggleMobile} hiddenFrom="sm" size="md" />
-              <Burger opened={desktopOpened} onClick={toggleDesktop} visibleFrom="sm" size="md" />
-              <Text>Menu</Text>
+              <Burger opened={mobileOpened} onClick={toggleMobile} hiddenFrom="sm" size="md" color="white" />
+              <Burger opened={desktopOpened} onClick={toggleDesktop} visibleFrom="sm" size="md" color="white" />
+              <Text c="white" fw={700} ff="'Fredoka One', cursive">ARC Check-In</Text>
             </div>
 
             <div className=''>
@@ -48,13 +48,17 @@ export function DefaultLayout({ children }: { children: React.ReactNode }) {
           </Flex>
 
         </AppShell.Header>
-        <AppShell.Navbar p="md" bg="menu">
+        <AppShell.Navbar p="md" bg="arc-orange.5">
           <NavLink href="/"
             label="Home"
-            leftSection={<IconHome2 size={16} stroke={1.5} />} />
+            color="white"
+            style={{ color: 'white' }}
+            leftSection={<IconHome2 size={16} stroke={1.5} color="white" />} />
           <NavLink href="/test"
             label="Test"
-            leftSection={<IconSettings size={16} stroke={1.5} />} />
+            color="white"
+            style={{ color: 'white' }}
+            leftSection={<IconSettings size={16} stroke={1.5} color="white" />} />
         </AppShell.Navbar>
 
         <AppShell.Main>

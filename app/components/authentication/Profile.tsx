@@ -65,7 +65,7 @@ export const Profile = () => {
                       height: '2.2rem',
                       borderRadius: '50%',
                       objectFit: 'cover',
-                      border: '3px solid #63b3ed'
+                      border: '3px solid white'
                     }}
                   />
                 )}
