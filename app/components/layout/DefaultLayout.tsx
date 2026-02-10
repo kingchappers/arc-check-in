@@ -28,7 +28,7 @@ export function DefaultLayout({ children }: { children: React.ReactNode }) {
           collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
         }}
       >
-        <AppShell.Header bg="arc-orange.5">
+        <AppShell.Header bg="arc-orange.8">
           <Flex mih={50}
             gap="md"
             justify="space-between"
@@ -48,7 +48,7 @@ export function DefaultLayout({ children }: { children: React.ReactNode }) {
           </Flex>
 
         </AppShell.Header>
-        <AppShell.Navbar p="md" bg="arc-orange.5">
+        <AppShell.Navbar p="md" bg="arc-orange.8">
           <NavLink href="/"
             label="Home"
             color="white"

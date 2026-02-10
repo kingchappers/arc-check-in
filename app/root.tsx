@@ -32,7 +32,7 @@ const theme = createTheme({
       "#ff8411",
       "#e8780f",
       "#cc6a0d",
-      "#a3550a",
+      "#9e4a08",
       "#7a3f08"
     ],
     'arc-charcoal': [
@@ -91,12 +91,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <ColorSchemeScript defaultColorScheme="auto" />
+        <ColorSchemeScript defaultColorScheme="light" />
         <Meta />
         <Links />
       </head>
       <body>
-        <MantineProvider defaultColorScheme="auto" theme={theme}>
+        <MantineProvider defaultColorScheme="light" theme={theme}>
           <Notifications />
           {children}
         </MantineProvider>

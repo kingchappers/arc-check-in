@@ -70,10 +70,10 @@ export const Profile = () => {
                   />
                 )}
                 <div style={{ textAlign: 'center' }}>
-                  <div className="profile-name" style={{ fontSize: '0.75rem', fontWeight: '600', color: '#f7fafc', marginBottom: '0.1rem' }}>
+                  <div className="profile-name" style={{ fontSize: '0.75rem', fontWeight: '600', color: '#ffffff', marginBottom: '0.1rem' }}>
                     {user.name}
                   </div>
-                  <div className="profile-email" style={{ fontSize: '0.6rem', color: '#a0aec0' }}>
+                  <div className="profile-email" style={{ fontSize: '0.6rem', color: '#ffe8cc' }}>
                     {user.email}
                   </div>
                 </div>
