@@ -38,7 +38,7 @@ Browser → API Gateway (HTTP v2)
 
 - `app/` - React application source
   - `routes/` - File-based routes (`_index.tsx` → home page)
-  - `components/` - React components (authentication, layout, api, checkin)
+  - `components/` - React components (authentication, layout, checkin, admin)
   - `hooks/` - Custom hooks including `useProtectedApi` for authenticated API calls
   - `root.tsx` - Root layout with Mantine theme configuration
 - `infra/` - OpenTofu infrastructure (Lambda, API Gateway, DynamoDB, IAM)
@@ -66,7 +66,8 @@ The build is a three-stage pipeline:
 - `POST /api/checkin` - Toggles check-in/check-out (race-condition protected via DynamoDB ConditionExpression)
 - `GET /api/checkin/history` - Returns last 50 check-in sessions for the user
 - `GET /api/user-info` - Returns user profile (name, email) from JWT claims
-- `GET /api/test` - Test endpoint
+- `GET /api/admin/checkins/active` - Returns all currently checked-in users (admin only)
+- `GET /api/admin/checkins/history?start=&end=` - Returns checkins within date range (admin only)
 
 ### Data Model (DynamoDB)
 
@@ -75,10 +76,10 @@ Table `arc-check-in-checkin-sessions`: `userId` (PK) + `checkInTime` (SK). Check
 ## Environment Variables
 
 **Frontend (Vite compile-time):**
-- `VITE_AUTH0_DOMAIN`, `VITE_AUTH0_CLIENT_ID`, `VITE_AUTH0_AUDIENCE`
+- `VITE_AUTH0_DOMAIN`, `VITE_AUTH0_CLIENT_ID`, `VITE_AUTH0_AUDIENCE`, `VITE_AUTH0_NAMESPACE`
 
 **Lambda (runtime):**
-- `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `NODE_ENV`, `DYNAMODB_TABLE_NAME`
+- `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `AUTH0_NAMESPACE`, `NODE_ENV`, `DYNAMODB_TABLE_NAME`
 
 ## CI/CD
 

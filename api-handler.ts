@@ -73,10 +73,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     const method = event.requestContext?.http?.method;
     console.log('Path:', path);
 
-    if (path === '/api/test') {
-      return handleTestEndpoint(decoded);
-    }
-
     if (path === '/api/user-info') {
       return handleUserInfo(decoded);
     }
@@ -286,18 +282,6 @@ async function handleCheckinHistory(decoded: any) {
       body: JSON.stringify({ error: 'Internal server error' }),
     };
   }
-}
-
-function handleTestEndpoint(decoded: any) {
-  return {
-    statusCode: 200,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message: 'Hello from protected API',
-      userId: decoded.sub,
-      timestamp: new Date().toISOString(),
-    }),
-  };
 }
 
 function handleUserInfo(decoded: any) {
