@@ -2,8 +2,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { AppShell, Burger, Flex, Text, NavLink } from '@mantine/core';
 import { Auth0Provider } from '@auth0/auth0-react';
 import Authentication from "../authentication/Authentication";
-import { ApiTest } from '../api/ApiTest';
-import { IconHome2, IconSettings, IconShieldCheck } from '@tabler/icons-react';
+import { IconHome2, IconShieldCheck } from '@tabler/icons-react';
 import { useAdminRole } from '~/hooks/useAdminRole';
 // import { NavLink } from "react-router";
 
@@ -17,11 +16,6 @@ function NavbarContent() {
         color="white"
         style={{ color: 'white' }}
         leftSection={<IconHome2 size={16} stroke={1.5} color="white" />} />
-      <NavLink href="/test"
-        label="Test"
-        color="white"
-        style={{ color: 'white' }}
-        leftSection={<IconSettings size={16} stroke={1.5} color="white" />} />
       {isAdmin && (
         <NavLink href="/admin"
           label="Admin"
@@ -81,9 +75,6 @@ export function DefaultLayout({ children }: { children: React.ReactNode }) {
 
         <AppShell.Main>
           {children}
-          <div style={{ marginTop: '2rem' }}>
-            <ApiTest />
-          </div>
         </AppShell.Main>
       </AppShell>
     </Auth0Provider>
