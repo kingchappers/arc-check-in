@@ -2,11 +2,17 @@ import { verify } from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 import type { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, QueryCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand, PutCommand, UpdateCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
 
 const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN || '';
 const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE || '';
 const DYNAMODB_TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || '';
+const AUTH0_NAMESPACE = process.env.AUTH0_NAMESPACE || '';
+
+function isAdmin(decoded: any): boolean {
+  const roles: string[] = decoded[`${AUTH0_NAMESPACE}/roles`] || [];
+  return roles.includes('admin');
+}
 
 // Create DynamoDB client
 const dynamoClient = new DynamoDBClient({});
@@ -85,6 +91,26 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
     if (path === '/api/checkin' && method === 'POST') {
       return handleCheckinToggle(decoded);
+    }
+
+    // Admin endpoints - require admin role
+    if (path.startsWith('/api/admin/')) {
+      if (!isAdmin(decoded)) {
+        return {
+          statusCode: 403,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: 'Forbidden: admin role required' }),
+        };
+      }
+
+      if (path === '/api/admin/checkins/active' && method === 'GET') {
+        return handleAdminActiveCheckins();
+      }
+
+      if (path === '/api/admin/checkins/history' && method === 'GET') {
+        const params = event.queryStringParameters || {};
+        return handleAdminCheckinHistory(params.start, params.end);
+      }
     }
 
     // 404 for unknown endpoints
@@ -187,11 +213,15 @@ async function handleCheckinToggle(decoded: any) {
       // ConditionExpression above prevents the real issue (orphaned sessions)
       // by ensuring only one request can close a session.
       const checkInTime = new Date().toISOString();
+      const userName = decoded[`${AUTH0_DOMAIN}/name`] || decoded.name || '';
+      const userEmail = decoded[`${AUTH0_DOMAIN}/email`] || decoded.email || '';
       await docClient.send(new PutCommand({
         TableName: DYNAMODB_TABLE_NAME,
         Item: {
           userId: userId,
           checkInTime: checkInTime,
+          userName: userName,
+          userEmail: userEmail,
         },
       }));
 
@@ -280,4 +310,79 @@ function handleUserInfo(decoded: any) {
       name: decoded[`${AUTH0_DOMAIN}/name`] || decoded.name,
     }),
   };
+}
+
+async function handleAdminActiveCheckins() {
+  try {
+    const result = await docClient.send(new ScanCommand({
+      TableName: DYNAMODB_TABLE_NAME,
+      FilterExpression: 'attribute_not_exists(checkOutTime)',
+    }));
+
+    const sessions = (result.Items || [])
+      .sort((a, b) => b.checkInTime.localeCompare(a.checkInTime))
+      .map(item => ({
+        userId: item.userId,
+        userName: item.userName || '',
+        userEmail: item.userEmail || '',
+        checkInTime: item.checkInTime,
+      }));
+
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessions }),
+    };
+  } catch (error) {
+    console.error('Error fetching active checkins:', error instanceof Error ? error.message : 'Unknown error');
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Internal server error' }),
+    };
+  }
+}
+
+async function handleAdminCheckinHistory(start?: string, end?: string) {
+  try {
+    if (!start || !end) {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'start and end query parameters are required' }),
+      };
+    }
+
+    const result = await docClient.send(new ScanCommand({
+      TableName: DYNAMODB_TABLE_NAME,
+      FilterExpression: 'checkInTime BETWEEN :start AND :end',
+      ExpressionAttributeValues: {
+        ':start': start,
+        ':end': end,
+      },
+    }));
+
+    const sessions = (result.Items || [])
+      .sort((a, b) => b.checkInTime.localeCompare(a.checkInTime))
+      .map(item => ({
+        userId: item.userId,
+        userName: item.userName || '',
+        userEmail: item.userEmail || '',
+        checkInTime: item.checkInTime,
+        checkOutTime: item.checkOutTime || null,
+      }));
+
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessions }),
+    };
+  } catch (error) {
+    console.error('Error fetching checkin history:', error instanceof Error ? error.message : 'Unknown error');
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Internal server error' }),
+    };
+  }
 }

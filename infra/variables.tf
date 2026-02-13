@@ -39,6 +39,11 @@ variable "auth0_audience" {
   description = "Auth0 API audience identifier"
 }
 
+variable "auth0_namespace" {
+  description = "Auth0 custom claims namespace (e.g. https://yourdomain.com)"
+  type        = string
+}
+
 variable "cors_allowed_origins" {
   type        = list(string)
   description = "List of allowed origins for CORS (e.g., ['https://example.com'])"

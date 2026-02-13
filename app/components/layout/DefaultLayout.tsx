@@ -3,8 +3,35 @@ import { AppShell, Burger, Flex, Text, NavLink } from '@mantine/core';
 import { Auth0Provider } from '@auth0/auth0-react';
 import Authentication from "../authentication/Authentication";
 import { ApiTest } from '../api/ApiTest';
-import { IconHome2, IconSettings } from '@tabler/icons-react';
+import { IconHome2, IconSettings, IconShieldCheck } from '@tabler/icons-react';
+import { useAdminRole } from '~/hooks/useAdminRole';
 // import { NavLink } from "react-router";
+
+function NavbarContent() {
+  const { isAdmin } = useAdminRole();
+
+  return (
+    <>
+      <NavLink href="/"
+        label="Home"
+        color="white"
+        style={{ color: 'white' }}
+        leftSection={<IconHome2 size={16} stroke={1.5} color="white" />} />
+      <NavLink href="/test"
+        label="Test"
+        color="white"
+        style={{ color: 'white' }}
+        leftSection={<IconSettings size={16} stroke={1.5} color="white" />} />
+      {isAdmin && (
+        <NavLink href="/admin"
+          label="Admin"
+          color="white"
+          style={{ color: 'white' }}
+          leftSection={<IconShieldCheck size={16} stroke={1.5} color="white" />} />
+      )}
+    </>
+  );
+}
 
 export function DefaultLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
@@ -49,16 +76,7 @@ export function DefaultLayout({ children }: { children: React.ReactNode }) {
 
         </AppShell.Header>
         <AppShell.Navbar p="md" bg="arc-orange.8">
-          <NavLink href="/"
-            label="Home"
-            color="white"
-            style={{ color: 'white' }}
-            leftSection={<IconHome2 size={16} stroke={1.5} color="white" />} />
-          <NavLink href="/test"
-            label="Test"
-            color="white"
-            style={{ color: 'white' }}
-            leftSection={<IconSettings size={16} stroke={1.5} color="white" />} />
+          <NavbarContent />
         </AppShell.Navbar>
 
         <AppShell.Main>

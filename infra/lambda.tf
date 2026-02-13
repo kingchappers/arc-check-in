@@ -44,7 +44,8 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
           "dynamodb:GetItem",
           "dynamodb:PutItem",
           "dynamodb:UpdateItem",
-          "dynamodb:Query"
+          "dynamodb:Query",
+          "dynamodb:Scan"
         ]
         Resource = aws_dynamodb_table.checkin_sessions.arn
       }
